@@ -1,0 +1,8 @@
+{
+    "appService.deploySubpath": ".",
+    "appService.zipIgnorePattern": [
+        "node_modules{,/**}",
+        ".vscode{,/**}"
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/c7a61066-fae6-4d63-8ca0-c0aa7b0fe15a/resourceGroups/CloudNewmanRG/providers/Microsoft.Web/sites/cloudnewman"
+}
