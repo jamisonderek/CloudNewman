@@ -6,6 +6,7 @@ var logger = require('morgan');
 
 var newmanRouter = require('./routes/cloud-newman');
 var githubRouter = require('./routes/github');
+var postmanRouter = require('./routes/postman');
 
 var app = express();
 
@@ -35,6 +36,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/v1', newmanRouter);
 app.use('/', githubRouter);
+app.use('/github', githubRouter);
+app.use('/postman', postmanRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
