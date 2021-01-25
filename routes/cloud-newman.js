@@ -51,20 +51,20 @@ router.post('/', async function(req, res, next) {
       }  
     }
 
-    if (req.query.contenttype) {
-      content_type = req.query.contenttype;
-    }
-
     if (jsonBody.contenttype) {
       content_type = jsonBody.contenttype;
     }
 
-    if (req.query.apikey) {
-      postman_api_key = req.query.apikey;
+    if (req.query.contenttype) {
+      content_type = req.query.contenttype;
     }
 
     if (jsonBody.apikey) {
       postmap_api_key = jsonBody.apikey;
+    }
+
+    if (req.query.apikey) {
+      postman_api_key = req.query.apikey;
     }
 
     // Some documentation says 'X-Api-Key', some says 'X-API-Key' and
@@ -80,28 +80,28 @@ router.post('/', async function(req, res, next) {
       }
     }
 
-    if (req.query.collectionuid) {
-      collection_uid = req.query.collectionuid;
-    }
-
     if (jsonBody.collectionuid) {
       collection_uid = jsonBody.collectionuid;
     }
 
-    if (req.query.environmentuid) {
-      environment_uid = req.query.environmentuid;
+    if (req.query.collectionuid) {
+      collection_uid = req.query.collectionuid;
     }
 
     if (jsonBody.environmentuid) {
       environment_uid = jsonBody.environmentuid;
     }
 
-    if (req.query.environmentoverlayuid) {
-      environment_overlay_uid = req.query.environmentoverlayuid;
+    if (req.query.environmentuid) {
+      environment_uid = req.query.environmentuid;
     }
 
     if (jsonBody.environmentoverlayuid) {
       environment_overlay_uid = jsonBody.environmentoverlayuid;
+    }
+
+    if (req.query.environmentoverlayuid) {
+      environment_overlay_uid = req.query.environmentoverlayuid;
     }
 
     const collection_url = `https://api.getpostman.com/collections/${collection_uid}?apikey=${postman_api_key}`; 
