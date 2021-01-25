@@ -162,6 +162,24 @@ router.post('/', async function(req, res, next) {
           }
         }
       }
+
+      if (env.key.toLowerCase().startsWith('allow.') && env.enabled) {
+        var allowedParam = env.key.toLowerCase().substring('allow.'.length);
+        if (jsonBody[allowedParam] !== undefined) {
+          environment.environment.values.push({
+            key: allowedParam,
+            value: jsonBody[allowedParam],
+            enabled: true
+          });
+        }
+        if (req.query[allowedParam] !== undefined) {
+          environment.environment.values.push({
+            key: allowedParam,
+            value: req.query[allowedParam],
+            enabled: true
+          });
+        }
+      }
     })
 
     newman.run({
@@ -200,6 +218,7 @@ router.post('/', async function(req, res, next) {
         if (!responseObject) {
           res.statusCode = 200;
           res.end();
+          return;
         }
    
         if (Array.isArray(responseObject))
