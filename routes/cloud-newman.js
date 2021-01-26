@@ -165,19 +165,54 @@ router.post('/', async function(req, res, next) {
 
       if (env.key.toLowerCase().startsWith('allow.') && env.enabled) {
         var allowedParam = env.key.toLowerCase().substring('allow.'.length);
+
         if (jsonBody[allowedParam] !== undefined) {
-          environment.environment.values.push({
+          log(`${allowedParam} overriden by allowed body variable`);
+
+          var override = {
             key: allowedParam,
             value: jsonBody[allowedParam],
             enabled: true
+          };
+          
+          var overriden = false;
+          environment.environment.values.forEach(env => {
+            if (env.key == override.key) {
+              env.value = override.value;
+              env.enabled = override.enabled;
+              log(`Updating environment variable ${env.key}`);
+              overriden = true;
+            }
           });
+
+          if (!overriden) {
+            log(`Adding environment variable ${override.key}`);
+            environment.environment.values.push(override);
+          }
+
         }
         if (req.query[allowedParam] !== undefined) {
-          environment.environment.values.push({
+          log(`${allowedParam} overriden by allowed query variable`);
+          var override = {
             key: allowedParam,
-            value: req.query[allowedParam],
+            value: jsonBody[allowedParam],
             enabled: true
+          };
+          
+          var overriden = false;
+          environment.environment.values.forEach(env => {
+            if (env.key == override.key) {
+              env.value = override.value;
+              env.enabled = override.enabled;
+              log(`Updating environment variable ${env.key}`);
+              overriden = true;
+            }
           });
+
+          if (!overriden) {
+            log(`Adding environment variable ${override.key}`);
+            environment.environment.values.push(override);
+          }
         }
       }
     })
