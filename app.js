@@ -21,18 +21,102 @@ app.use(logger('dev'));
 function rawBody(req, res, next) {
   req.setEncoding('utf8');
   req.rawBody = '';
-  req.on('data', function(chunk) {
+    req.on('data', function(chunk) {
     req.rawBody += chunk;
   });
-  req.on('end', function(){
+
+  req.on('end', function() {
+
+    var parsed = false;
+    req.jsonBody = {};
+
+    if (req.rawBody.length !== 0) {
+      var contentType = req.headers['content-type'];
+      if (contentType) {
+        contentType = contentType.toLowerCase();
+      } else {
+        contentType = '';
+      }
+
+      // Try JSON first.
+      try {
+        req.jsonBody = JSON.parse(req.rawBody);
+        parsed = true;
+      } catch (e) {
+        // Try to return graphQL query.
+        var graphQLvars = req.rawBody.replace(/,"variables":.*}/gi, '}');
+        try {
+          req.jsonBody = JSON.parse(graphQLvars);
+          req.jsonBody.graphql = req.rawBody;
+          parsed = true;
+        } catch (ex) {
+        }  
+      }  
+  
+      if (!parsed & contentType.includes('form-data')) {
+        var delim = contentType.substring(contentType.indexOf('=')+1);
+
+        var lastIndex = 0;
+        var index = req.rawBody.indexOf(delim, lastIndex);
+        while (index >=0) {
+          var nextChars = req.rawBody.substring(index+delim.length).substring(0,2);
+          if (nextChars == '--') {
+            break;
+          }
+          if (nextChars[1]<31) {
+            index += 2;
+          } else {
+            index++;
+          }
+
+          var endIndex = req.rawBody.indexOf(delim, index);
+          if (endIndex >=  0) {
+            var content = req.rawBody.substring(index+delim.length, endIndex - 4);
+            var variableName = content.match(/["]([^"]*)/i);
+            if (variableName.length > 1) {
+              variableName=variableName[1];
+
+              value = content.substring(content.indexOf('\n')+3);
+              req.jsonBody[variableName] = value;
+              parsed = true;
+            }
+          }
+
+          index = req.rawBody.indexOf(delim, endIndex);
+        }
+      }
+  
+      if (contentType && contentType.includes('x-www-form-urlencoded')) {
+        var parts = req.rawBody.split('&');
+        parts.forEach(part => {
+          var part = part.split('=');
+          if (part.length === 2) {
+            var value = part[1];
+
+            value = value.replace(/%../gi, x => {
+              var character = parseInt(x.substring(1),16);
+              return String.fromCharCode(character);
+            });
+
+            req.jsonBody[part[0]] = value;
+            parsed = true;
+          }
+        });
+      }
+
+      if (!parsed) {
+        console.log(`failed to parse raw: >${req.rawBody}<`);
+      }
+    }
+
     next();
   });
 }
 app.use(rawBody);
 
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+// app.use(express.urlencoded({ extended: false }));
+// app.use(cookieParser());
+// app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/v1', newmanRouter);
 app.use('/', githubRouter);
