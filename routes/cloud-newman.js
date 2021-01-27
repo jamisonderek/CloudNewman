@@ -41,15 +41,8 @@ router.post('/', async function(req, res, next) {
   log('Processing request...');
 
   try {
-    var jsonBody = {};
+    var jsonBody = req.jsonBody;
 
-    if (req.rawBody.length > 0) {
-      try {
-        jsonBody = JSON.parse(req.rawBody);
-      } catch (e) {
-        throw new Error('Error parsing BODY as JSON.');        
-      }  
-    }
 
     if (jsonBody.contenttype) {
       content_type = jsonBody.contenttype;
@@ -60,7 +53,7 @@ router.post('/', async function(req, res, next) {
     }
 
     if (jsonBody.apikey) {
-      postmap_api_key = jsonBody.apikey;
+      postman_api_key = jsonBody.apikey;
     }
 
     if (req.query.apikey) {
@@ -77,6 +70,7 @@ router.post('/', async function(req, res, next) {
       var header_name = element.toLowerCase();
       if (header_name === 'x-api-key') {
         postman_api_key = req.headers[element];
+        log(`header set postman_api_key to ${postman_api_key}`);
       }
     }
 
@@ -157,17 +151,18 @@ router.post('/', async function(req, res, next) {
           return_logs = true;
 
           if (env.value.toLowerCase() === 'secure') {
-            securelog = securedebug ? (msg) => {var m = `***PASSWORD*** ${msg}`; console.error(m); logs.push(m);} : (msg) => { logs.push(`***PASSWORD*** ${msg}`); };
+           securelog = securedebug ? (msg) => {var m = `***PASSWORD*** ${msg}`; console.error(m); logs.push(m);} : (msg) => { logs.push(`***PASSWORD*** ${msg}`); };
             log('Request for secure logs.');
           }
         }
       }
 
       if (env.key.toLowerCase().startsWith('allow.') && env.enabled) {
-        var allowedParam = env.key.toLowerCase().substring('allow.'.length);
+        var allowedParam = env.key.substring('allow.'.length);
+        log(`Checking for overrides of ${allowedParam}.`);
 
         if (jsonBody[allowedParam] !== undefined) {
-          log(`${allowedParam} overriden by allowed body variable`);
+          log(`${allowedParam} overriden by allowed body variable.`);
 
           var override = {
             key: allowedParam,
@@ -180,22 +175,22 @@ router.post('/', async function(req, res, next) {
             if (env.key == override.key) {
               env.value = override.value;
               env.enabled = override.enabled;
-              log(`Updating environment variable ${env.key}`);
+              log(`Updating environment variable ${env.key}.`);
               overriden = true;
             }
           });
 
           if (!overriden) {
-            log(`Adding environment variable ${override.key}`);
+            log(`Adding environment variable ${override.key}.`);
             environment.environment.values.push(override);
           }
 
         }
         if (req.query[allowedParam] !== undefined) {
-          log(`${allowedParam} overriden by allowed query variable`);
+          log(`${allowedParam} overriden by allowed query variable.`);
           var override = {
             key: allowedParam,
-            value: jsonBody[allowedParam],
+            value: req.query[allowedParam],
             enabled: true
           };
           
@@ -204,18 +199,22 @@ router.post('/', async function(req, res, next) {
             if (env.key == override.key) {
               env.value = override.value;
               env.enabled = override.enabled;
-              log(`Updating environment variable ${env.key}`);
+              log(`Updating environment variable ${env.key}.`);
               overriden = true;
             }
           });
 
           if (!overriden) {
-            log(`Adding environment variable ${override.key}`);
+            log(`Adding environment variable ${override.key}.`);
             environment.environment.values.push(override);
           }
         }
       }
-    })
+    });
+
+    securelog('Running Newman');
+    securelog(`collection: JSON.stringify(collection.collection)`);
+    securelog(`environment: JSON.stringify(environment.environment)`);
 
     newman.run({
       collection: collection.collection,
