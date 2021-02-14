@@ -3,10 +3,10 @@ Turn your Postman collection into an API! Supports private data. Simple to use-j
 
 ## Usage
 ### Loading the project github page
-GET or POST requests to https://www.cloudnewman.com should redirect to the github page for the project.
+GET or POST requests to https://www.cloudnewman.me should redirect to the github page for the project.
 
 ### Using the CloudNewman API
-POST https://www.cloudnewman.com/v1
+POST https://www.cloudnewman.me/v1
 In the body specify a JSON object with your collectionuid, environmentuid and environmentoverlayuid.  
 If you don't have an environmentoverlayuid then do not specify anything.
 The post body should look something like...
@@ -22,7 +22,7 @@ or
 }
 In the headers add "X-API-Key" with your POSTMAN API key.
 You can add a queryparameter of contenttype=<type> to force the response type. Something like..
-POST https://www.cloudnewman.com/v1?contenttype=text/plain
+POST https://www.cloudnewman.me/v1?contenttype=text/plain
 
 The collection specified by collectionuid will run in the environment you specified.
 The last script's console.log message will be returned with an HTTP status code of 200 OK.
